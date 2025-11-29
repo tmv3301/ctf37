@@ -183,6 +183,10 @@ int main(int argc,char *argv[]){
         return 1;
     }
 
+    f_93bd();
+    f_5c29();
+    f_ae04();
+
     int mode = atoi(argv[1]);
 
     switch(mode){
