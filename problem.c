@@ -40,11 +40,11 @@ static uint32_t f_ae04(void) {
     uint32_t c = get_segment_value(2);
     uint32_t d = get_segment_value(3);
 
-    uint32_t s1 = ((a ^ 0x13572468u) + (b ^ 0x13572468u)) ^ 0x26AE49D0u;
+    uint32_t s1 = ((a + b ^ 0x13572468u)) ^ 0xD9A99ED6u;
     uint32_t t2 = (c + 0x11111111u) + (d + 0x22222222u);
     uint32_t s2 = t2 - 0x33333333u;
 
-    uint32_t u1 = s1 ^ 0xCAFEBABEu;
+    uint32_t u1 = s1;
     uint32_t u2 = s2 ^ 0xCAFEBABEu;
     return u1 ^ u2;
 }
