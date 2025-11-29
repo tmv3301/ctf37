@@ -99,19 +99,6 @@ static char *get_c_token(void){
     return buf;
 }
 
-static unsigned char s_d_enc[]={
- 'k'^0x42,'o'^0x42,'r'^0x42,'e'^0x42,'a'^0x42,
- '_'^0x42,'u'^0x42,'n'^0x42,'i'^0x42,'v'^0x42,
- '_'^0x42,'s'^0x42,'e'^0x42,'c'^0x42,'u'^0x42,
- 'r'^0x42,'i'^0x42,'t'^0x42,'y'^0x42,'\0'^0x42
-};
-static char *get_d_token(void){
-    static char buf[sizeof(s_d_enc)];
-    static int ok=0;
-    if(!ok){ xor_block(buf,s_d_enc,sizeof(s_d_enc),0x42); ok=1; }
-    return buf;
-}
-
 static int detect_debugger(void){
     if(ptrace(PTRACE_TRACEME,0,0,0)==-1) return 1;
     raise(SIGSTOP);
@@ -164,54 +151,25 @@ static int stage_c(void){
     return 1;
 }
 
-static const unsigned char prog_d[]={
-    0x01,0x13,
-    0x02,0,'k',
-    0x02,1,'o',
-    0x02,2,'r',
-    0x02,3,'e',
-    0x02,4,'a',
-    0x02,5,'_',
-    0x02,6,'u',
-    0x02,7,'n',
-    0x02,8,'i',
-    0x02,9,'v',
-    0x02,10,'_',
-    0x02,11,'s',
-    0x02,12,'e',
-    0x02,13,'c',
-    0x02,14,'u',
-    0x02,15,'r',
-    0x02,16,'i',
-    0x02,17,'t',
-    0x02,18,'y',
-    0xFF
-};
 
-static int run_vm(const char *s){
-    size_t len=strlen(s);
-    int pc=0;
-    while(1){
-        unsigned char op=prog_d[pc++];
-        if(op==0xFF) return 0;
-        if(op==0x01){
-            unsigned char need=prog_d[pc++];
-            if(len!=need) return 1;
-        } else if(op==0x02){
-            unsigned char idx=prog_d[pc++];
-            unsigned char ch =prog_d[pc++];
-            if(idx>=len||s[idx]!=ch) return 1;
-        } else return 1;
+static uint32_t hash_d(const char *s) {
+    uint32_t h = 0x1234ABCDu;
+    while (*s) {
+        unsigned char ch = (unsigned char)*s++;
+        h ^= ch;
+        h = (h << 5) | (h >> 27);
+        h += 0x9E3779B9u;
     }
+    return h;
 }
 
 static int stage_d(void){
     char buf[64];
     printf("[D] Key: ");
-    if(!fgets(buf,64,stdin)) return 1;
-    buf[strcspn(buf,"\n")]=0;
+    if(!fgets(buf,sizeof(buf),stdin)) return 1;
+    buf[strcspn(buf,"\n")] = 0;
 
-    if(run_vm(buf)==0){
+    if (hash_d(buf) == 0x38E7C41Cu) {
         printf("%08X\n", get_segment_value(3));
         return 0;
     }
