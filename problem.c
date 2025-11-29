@@ -21,6 +21,8 @@ static void xor_block(char *dst, const unsigned char *src, size_t len, unsigned 
     for (size_t i = 0; i < len; i++) dst[i] = (char)(src[i] ^ key);
 }
 
+static volatile uint32_t dummy_sink;
+
 static uint32_t get_segment_value(int seg) {
     static unsigned char dec_idx[4];
     static int init = 0;
@@ -183,9 +185,9 @@ int main(int argc,char *argv[]){
         return 1;
     }
 
-    f_93bd();
-    f_5c29();
-    f_ae04();
+    dummy_sink ^= f_93bd();
+    dummy_sink ^= f_5c29();
+    dummy_sink ^= f_ae04();
 
     int mode = atoi(argv[1]);
 
