@@ -6,7 +6,7 @@
 #include <signal.h>
 #include <sys/ptrace.h>
 
-static const uint32_t key_table[8] = {
+static volatile const uint32_t key_table[8] = {
     0xDEADBEEFu,
     0x02C0FFEEu,
     0xBAADF00Du,
@@ -34,18 +34,23 @@ static uint32_t get_segment_value(int seg) {
     return key_table[ dec_idx[seg] & 7 ];
 }
 
+volatile uint32_t num1 = 0x13572468u;
+volatile uint32_t num2 = 0x11111111u;
+volatile uint32_t num3 = 0x22222222u;
+volatile uint32_t num4 = 0xCAFEBABEu;
+
 static uint32_t f_ae04(void) {
     uint32_t a = get_segment_value(0);
     uint32_t b = get_segment_value(1);
     uint32_t c = get_segment_value(2);
     uint32_t d = get_segment_value(3);
 
-    uint32_t s1 = ((a + b ^ 0x13572468u)) ^ 0xD9A99ED6u;
-    uint32_t t2 = (c + 0x11111111u) + (d + 0x22222222u);
+    uint32_t s1 = ((a + b ^ num1)) ^ 0xD9A99ED6u;
+    uint32_t t2 = (c + num2) + (d + num3);
     uint32_t s2 = t2 - 0x33333333u;
 
     uint32_t u1 = s1;
-    uint32_t u2 = s2 ^ 0xCAFEBABEu;
+    uint32_t u2 = s2 ^ num4;
     return u1 ^ u2;
 }
 
